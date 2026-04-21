@@ -27,6 +27,11 @@ disableKinds = ["taxonomy", "term", "RSS"]
   [markup.goldmark]
     [markup.goldmark.extensions]
       definitionList = true
+      [markup.goldmark.extensions.passthrough]
+        enable = true
+        [markup.goldmark.extensions.passthrough.delimiters]
+          block = [["\\[", "\\]"], ["$$", "$$"]]
+          inline = [["\\(", "\\)"]]
     [markup.goldmark.renderer]
       unsafe = true
 
