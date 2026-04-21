@@ -12,7 +12,7 @@ objectives = [
   "Understand how local and batch execution can use the same `Snakefile`.",
   "Use a workflow profile to store HTCondor-specific execution settings.",
   "Recognise which resource settings matter for HTCondor jobs.",
-  "Know where to find working CERN examples for further study."
+  "Know where to find a concrete HTCondor example for further study."
 ]
 keypoints = [
   "The `Snakefile` should usually stay the same across local and batch execution.",
@@ -27,19 +27,19 @@ HTCondor cluster. The main idea is simple: the workflow logic should stay the
 same. In most cases, you should not rewrite rules for HTCondor. Instead, you
 change how Snakemake is executed.
 
-This is a short reference episode rather than a full live exercise. The working
-examples used here come from CERN, and live in the
+This is a short reference episode rather than a full live exercise. The
+concrete example used here comes from CERN, and lives in the
 [`snakemake-lxplus-example` repository](https://github.com/clelange/snakemake-lxplus-example/tree/htcondor_plugin)
-(will probably soon be moved to
-[github.com/hep-workflows/snakemake-lxplus-example/](https://github.com/hep-workflows/snakemake-lxplus-example/)).
+(and will probably soon be moved under the
+[`hep-workflows` GitHub organization](https://github.com/hep-workflows)).
 
 ## Same Workflow, Different Execution
 
 The same rule can often run:
 
 - locally on your machine
-- on LxPlus
-- on LXBATCH through HTCondor
+- on a login node
+- on an HTCondor cluster such as LXBATCH
 
 That is one of the strengths of Snakemake. The rule still declares its
 `input`, `output`, resources, and software environment. What changes is the
@@ -153,17 +153,16 @@ are in a small local example. At minimum, think about:
 It is often sensible to set conservative defaults in the profile and then
 override them for unusually heavy rules in the workflow itself.
 
-## EOS and External Storage
-
-In the CERN examples, workflows often need to read from or write to EOS. The example
-repository includes both patterns:
+{{< details title="CERN-specific storage examples" >}}
+The CERN example repository also includes EOS examples:
 
 - writing directly to EOS from a batch job
 - reading a file from EOS and copying the result back into the workflow directory
 
-Those examples are useful because they show that storage handling can still be
+These examples are useful because they show that storage handling can still be
 expressed as ordinary workflow inputs and outputs, rather than as ad hoc manual
 steps.
+{{</ details >}}
 
 ## Why Batching Matters
 
@@ -180,8 +179,8 @@ Fixed-size batching is simpler, but cost-aware batching is often better when
 some samples are known to run much longer than others.
 
 {{< instructor >}}
-Keep this episode short in a live workshop. The main goal is to show that CERN
-or HTCondor execution changes the run configuration more than the workflow
-logic. Leave the full HTCondor, EOS, and batching details for offline study in
-the example repository linked at the top of the page.
+Keep this episode short in a live workshop. The main goal is to show that
+HTCondor execution changes the run configuration more than the workflow logic.
+Leave the full batching and site-specific details for offline study in the
+example repository linked at the top of the page.
 {{< /instructor >}}

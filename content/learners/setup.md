@@ -3,11 +3,9 @@ title = "Setup"
 weight = 10
 +++
 
-Snakemake is a Python library, which is distributed through
-[Bioconda](https://bioconda.github.io/recipes/snakemake/README.html).
-In order to install it, you need a tool such as Conda/Mamba.
-We recommend to use Pixi since we find it to be faster and easier
-to use than the other tools.
+Snakemake can be installed in several ways. In this lesson, we use
+[Pixi](https://pixi.sh/latest/) because it is fast and keeps the environment
+setup simple.
 
 ## Installing Pixi
 

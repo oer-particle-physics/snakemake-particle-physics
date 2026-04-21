@@ -60,7 +60,9 @@ How to read the DAG:
 
 {{< challenge title="Visualizing our Scaled Workflow" >}}
 
-1. Ensure you have the Snakefile from the previous episode (with `DYJets`, `TTbar`, `Data`, and `WJets`).
+1. Ensure you have the Snakefile from the previous episode with `DYJets`,
+   `TTbar`, and `Data`. If you also completed the optional `WJets` challenge,
+   your DAG will contain one additional branch.
 
 2. Run the DAG command:
 
@@ -101,8 +103,9 @@ If you had **4 cores**, how would the timing change?
 {{< solution >}}
 
 With 1 core, Snakemake runs every job sequentially.
-With 4 cores, Snakemake can run all four `skim_data` jobs simultaneously,
-significantly reducing the "Wall Clock" time of your analysis.
+With 4 cores, Snakemake can run up to four independent `select_events` jobs at
+the same time, which reduces the total wall-clock time before the final gather
+step runs.
 This is the power of a DAG-based system!
 
 {{< /solution >}}

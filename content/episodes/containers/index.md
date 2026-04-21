@@ -91,42 +91,11 @@ Snakemake which image to use for that rule.
 
 ## Running the Workflow with Apptainer
 
-Before running the workflow, set the Apptainer cache directory to a temporary
-location. Otherwise, pulled container images can quickly fill your home
-directory.
-
-On LxPlus and similar systems where `TMPDIR` is already defined, use:
-
-```bash
-export APPTAINER_CACHEDIR="${TMPDIR}/.apptainer-cache"
-mkdir -p "${APPTAINER_CACHEDIR}"
-```
-
-If you are not on such a system, use a user-specific directory under `/tmp`
-instead:
-
-```bash
-export APPTAINER_CACHEDIR="/tmp/${USER}/.apptainer-cache"
-mkdir -p "${APPTAINER_CACHEDIR}"
-```
-
 To make Snakemake execute containerised rules, use:
-
-```bash
-pixi run snakemake --cores 4 --software-deployment-method apptainer
-```
-
-The short form is:
 
 ```bash
 pixi run snakemake --cores 4 --sdm apptainer
 ```
-
-{{< callout type="note" title="Command-line syntax" >}}
-Older tutorials may use `--use-apptainer` or `--use-singularity`. In this
-lesson, we use `--software-deployment-method apptainer` because it matches the
-current Snakemake documentation.
-{{< /callout >}}
 
 {{< callout type="warning" title="What if you omit `--sdm apptainer`?" >}}
 If you run Snakemake without enabling Apptainer, the `container:` directive is
@@ -137,9 +106,29 @@ already installed on your machine, but you are no longer actually testing the
 containerised version of the rule.
 {{< /callout >}}
 
-{{< callout type="note" title="Optional: a Pixi task" >}}
-If you created the tutorial workspace with Pixi in the setup step, you can add
-the following snippet to the generated `pixi.toml`:
+{{< callout type="note" title="Practical notes" >}}
+If your system defines `TMPDIR`, it is a good idea to keep the Apptainer cache
+there rather than in your home directory:
+
+```bash
+export APPTAINER_CACHEDIR="${TMPDIR}/.apptainer-cache"
+mkdir -p "${APPTAINER_CACHEDIR}"
+```
+
+If `TMPDIR` is not defined, use a user-specific directory under `/tmp`
+instead:
+
+```bash
+export APPTAINER_CACHEDIR="/tmp/${USER}/.apptainer-cache"
+mkdir -p "${APPTAINER_CACHEDIR}"
+```
+
+Older tutorials may use `--use-apptainer` or `--use-singularity`. In this
+lesson, we use `--software-deployment-method apptainer` or the short form
+`--sdm apptainer`, because that matches the current Snakemake documentation.
+
+If you want, you can also store the command and cache setting in the generated
+`pixi.toml`:
 
 ```toml
 [tasks]
@@ -151,12 +140,6 @@ You can then run:
 ```bash
 pixi run snakemake-apptainer
 ```
-
-This is optional, but it can be convenient because it keeps the important
-`--sdm apptainer` option and the cache setting in one place.
-
-On systems where `TMPDIR` is not defined, replace `"$TMPDIR/.apptainer-cache"`
-with `"/tmp/$USER/.apptainer-cache"` instead.
 
 For more on Pixi tasks, see the
 [Pixi advanced tasks documentation](https://pixi.prefix.dev/latest/workspace/advanced_tasks/)

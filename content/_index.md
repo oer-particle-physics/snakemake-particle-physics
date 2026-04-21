@@ -36,8 +36,8 @@ layout = "hextra-home"
   link="episodes/checkpoints/"
 >}}
 {{< hextra/feature-card
-  title="Portable Execution"
-  subtitle="See how the same workflow can use per-rule containers and be submitted to HTCondor with a workflow profile."
+  title="Containers and Environments"
+  subtitle="Use per-rule containers to keep software requirements explicit and reproducible."
   icon="academic-cap"
   link="episodes/containers/"
 >}}

@@ -16,7 +16,7 @@ objectives = [
 ]
 keypoints = [
   "Use a `checkpoint` when the downstream file list is only known after an earlier step has run.",
-  "A `checkpoint lets Snakemake pause, run a discovery step, and then reevaluate the DAG.",
+  "A `checkpoint` lets Snakemake pause, run a discovery step, and then reevaluate the DAG.",
   "Input functions can inspect `checkpoint` outputs and construct the downstream targets dynamically.",
   "If the file list is already known in advance, ordinary wildcards and `expand()` are simpler."
 ]
