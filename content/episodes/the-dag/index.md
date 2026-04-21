@@ -136,5 +136,5 @@ It selectively re-executes only the parts of the DAG that are affected by your c
 In CMS terms: if you change a plotting style,
 you do not have to re-run the N-tupliser.
 
-{{< /solution >}}
-{{< /challenge >}}
+{{</ solution >}}
+{{</ challenge >}}

@@ -17,7 +17,7 @@ objectives = [
 keypoints = [
   "**container:**: A rule-level directive that specifies the Docker/Apptainer image to use.",
   "**--use-apptainer**: The command-line flag required to enable container execution.",
-  "***--apptainer-args**: Use this to bind external storage paths (like `/eos` or `/cvmfs`) so the container can see them.",
+  "**--apptainer-args**: Use this to bind external storage paths (like `/eos` or `/cvmfs`) so the container can see them.",
   "**Environment Agnostic**: You can mix and match different containers in a single workflow, ensuring each step has the exact dependencies it needs."
 ]
 +++
