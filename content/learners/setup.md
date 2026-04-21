@@ -43,4 +43,4 @@ pixi version
 
 ## Next step
 
-Now you're ready to [start using Snakemake](../../episodes/getting-started).
+Now you're ready to [start using Snakemake]({{< relref "/episodes/getting-started" >}}).
