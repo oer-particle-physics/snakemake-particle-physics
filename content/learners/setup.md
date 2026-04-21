@@ -3,54 +3,44 @@ title = "Setup"
 weight = 10
 +++
 
-For normal lesson authoring in this template, you only need Hugo Extended.
-The shared module is vendored in `_vendor/`, so local builds do not require Go.
+Snakemake is a Python library, which is distributed through
+[Bioconda](https://bioconda.github.io/recipes/snakemake/README.html).
+In order to install it, you need a tool such as Conda/Mamba.
+We recommend to use Pixi since we find it to be faster and easier
+to use than the other tools.
 
-{{< callout type="note" title="When Go is needed" >}}
-Go is only needed if you maintain module updates locally
-(for example, running `hugo mod tidy`, `hugo mod vendor`, or the migration checker).
+{{< callout type="note" title="Detailed Installation Instructions" >}}
+You can find the full installation instructions at
+<https://pixi.prefix.dev/latest/installation/>.
 {{< /callout >}}
 
+If CVMFS is available, we recommend to source the `setup.sh` as
+described below.
+
 {{< tabs >}}
-{{< tab name="macOS" selected=true >}}
+{{< tab name="LxPlus/CVMFS" selected=true >}}
 ```bash
-brew install hugo
+source /cvmfs/cms-griddata.cern.ch/cat/sw/pixi/latest/setup.sh
 ```
 {{< /tab >}}
-{{< tab name="Linux" >}}
+{{< tab name="Linux/macOS" >}}
 ```bash
-sudo apt install hugo
+curl -fsSL https://pixi.sh/install.sh | sh
 ```
 {{< /tab >}}
 {{< tab name="Windows" >}}
 ```powershell
-winget install Hugo.Hugo.Extended
+powershell -ExecutionPolicy Bypass -c "irm -useb https://pixi.sh/install.ps1 | iex"
 ```
 {{< /tab >}}
 {{< /tabs >}}
 
-{{< tabs >}}
-{{< tab name="bash" selected=true >}}
+Check that `pixi` is available:
+
 ```bash
-hugo version
+pixi version
 ```
-{{< /tab >}}
-{{< tab name="zsh" >}}
-```zsh
-hugo version
-```
-{{< /tab >}}
-{{< tab name="fish" >}}
-```fish
-hugo version
-```
-{{< /tab >}}
-{{< /tabs >}}
-
-If you plan to update `_vendor/` locally, install Go and verify with `go version`.
 
 ## Next step
 
-Once `hugo version` and `hugo server` work, return to
-[Getting started]({{< relref "/episodes/01-getting-started" >}})
-and continue with step 2: update `hugo.toml` before replacing the sample content.
+Now you're ready to [start using Snakemake](../../episodes/getting-started).

@@ -1,0 +1,16 @@
+{{- $key := .Get 0 | default (.Get "key") -}}
+{{- if not $key -}}
+  {{- errorf "The %q shortcode requires a metadata key. Use one of: title, tagline, description, siteTitle. See %s" .Name .Position -}}
+{{- end -}}
+
+{{- if eq $key "title" -}}
+  {{- site.Params.lesson.title | default site.Title -}}
+{{- else if eq $key "tagline" -}}
+  {{- site.Params.lesson.tagline | default "" -}}
+{{- else if eq $key "description" -}}
+  {{- site.Params.lesson.description | default "" -}}
+{{- else if eq $key "siteTitle" -}}
+  {{- site.Title -}}
+{{- else -}}
+  {{- errorf "Unsupported %q metadata key %q. Use one of: title, tagline, description, siteTitle. See %s" .Name $key .Position -}}
+{{- end -}}

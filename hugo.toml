@@ -1,6 +1,6 @@
-baseURL = "https://example.github.io/example-lesson/"
-title = "Example Lesson"
-languageCode = "en-us"
+baseURL = "https://oer-particle-physics.github.io/snakemake-particle-physics/"
+title = "Snakemake for Particle Physics"
+languageCode = "en-gb"
 enableGitInfo = true
 disableKinds = ["taxonomy", "term", "RSS"]
 
@@ -31,14 +31,14 @@ disableKinds = ["taxonomy", "term", "RSS"]
       unsafe = true
 
 [params.lesson]
-  title = "Example Lesson"
-  tagline = "A thin downstream lesson built on the shared hugo-styles module."
-  description = "Replace this metadata with your own tutorial details."
-  contact = "team@example.org"
-  repo = "https://github.com/oer-particle-physics/hugo-styles-template"
-  docsRepo = "https://github.com/oer-particle-physics/hugo-styles-template"
+  title = "Snakemake for Particle Physics"
+  tagline = "An introduction to Snakemake for particle physics data analysis."
+  description = "This lesson provides an introduction to Snakemake, a workflow management system, and how it can be used for particle physics data analysis. It covers the basics of Snakemake, including how to define rules, manage dependencies, and execute workflows. The lesson also includes practical examples and exercises to help learners get hands-on experience with Snakemake in the context of particle physics."
+  contact = "clemens.lange@cern.ch"
+  repo = "https://github.com/oer-particle-physics/snakemake-particle-physics"
+  docsRepo = "https://github.com/oer-particle-physics/snakemake-particle-physics"
   editBranch = "main"
-  copyrightHolder = "the authors"
+  copyrightHolder = "Clemens Lange"
   licenseName = "CC BY 4.0"
   licenseURL = "https://creativecommons.org/licenses/by/4.0/"
   lifecycle = "alpha"
@@ -147,7 +147,7 @@ disableKinds = ["taxonomy", "term", "RSS"]
       type = "search"
   [[menus.main]]
     name = "GitHub"
-    url = "https://github.com/oer-particle-physics/hugo-styles-template"
+    url = "https://github.com/oer-particle-physics/snakemake-particle-physics"
     weight = 90
     [menus.main.params]
       icon = "github"

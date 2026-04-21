@@ -1,24 +1,17 @@
 +++
-title = "Example Lesson"
+title = "Snakemake for Particle Physics"
 layout = "hextra-home"
 +++
 
-{{< hextra/hero-badge link="https://oer-particle-physics.github.io/hugo-styles/docs/quickstart/" >}}
-Shared module docs {{< icon name="arrow-circle-right" attributes="height=14" >}}
-{{< /hextra/hero-badge >}}
-
 <div class="hx:mt-6 hx:mb-6">
 {{< hextra/hero-headline >}}
-Launch a lesson&nbsp;
-<br class="hx:xl:block hx:hidden" />
-without copying framework code
+{{< lesson/meta "title" >}}
 {{< /hextra/hero-headline >}}
 </div>
 
 <div class="hx:mb-12">
 {{< hextra/hero-subtitle >}}
-Start with local setup checks, then update `hugo.toml`, then replace the sample content.
-The shared [hugo-styles](https://oer-particle-physics.github.io/hugo-styles/docs/quickstart/) docs provide the authoring, deployment, and update guidance while this template stays focused on lesson-specific files.
+{{< lesson/meta "tagline" >}}
 {{< /hextra/hero-subtitle >}}
 </div>
 
@@ -27,7 +20,7 @@ The shared [hugo-styles](https://oer-particle-physics.github.io/hugo-styles/docs
 </div>
 
 <div class="hx:mt-6"></div>
-
+<!--
 {{< hextra/feature-grid cols="3" >}}
 {{< hextra/feature-card
   title="First-run path"
@@ -47,7 +40,7 @@ The shared [hugo-styles](https://oer-particle-physics.github.io/hugo-styles/docs
   icon="sparkles"
   link="learners/setup/"
 >}}
-{{< /hextra/feature-grid >}}
+{{< /hextra/feature-grid >}} -->
 
 <div class="hx:mt-6"></div>
 {{< lesson/overview >}}
