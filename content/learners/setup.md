@@ -43,6 +43,16 @@ Check that `pixi` is available:
 pixi version
 ```
 
+{{< callout type="note" title="Later episodes use Apptainer" >}}
+The first episodes only need Snakemake itself. The later episode on
+containers also needs Apptainer, which is usually easiest on a Linux system
+where Apptainer is already available, such as LxPlus or a Tier-3 cluster.
+
+If you are working locally on macOS or Windows, you can still follow the early
+episodes, but you may want to switch to such a system for the container
+material.
+{{< /callout >}}
+
 ## Installing Snakemake
 
 We will use a dedicated directory for this tutorial:

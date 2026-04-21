@@ -1,150 +1,258 @@
 +++
-title = "Scaling with Wildcards"
+title = "Scaling with Wildcards and Scatter-Gather"
 weight = 20
 teaching = 15
 exercises = 10
 questions = [
-  "How can I use one rule to process multiple different samples?",
-  "What is a wildcard and how does Snakemake \"fill\" it?",
-  "How do I tell Snakemake to generate a list of all my target files?"
+  "How can one rule process many event files?",
+  "What does a scatter-gather workflow look like in Snakemake?",
+  "How do wildcards and `expand()` help a workflow scale?"
 ]
 objectives = [
-  "Replace hardcoded filenames with `{wildcards}`.",
-  "Use the `expand()` function to generate lists of outputs.",
-  "Understand how Snakemake \"pattern matches\" files on disk."
+  "Use wildcards to run the same rule over many files.",
+  "Use `expand()` to define a whole collection of expected outputs.",
+  "Build a simple scatter-gather workflow.",
+  "Use `script:` for a small gather step."
 ]
 keypoints = [
-  "**Wildcards**: Use `{name}` in filenames to define a generic rule.",
-  "**Constraints**: Snakemake fills wildcards by looking at the *output* you requested and propagating that value to the *input*.",
-  "**expand()**: A Python function that generates a list of filenames from a pattern. It is commonly used in `rule all` to define the final targets.",
-  "**Parallelism**: With wildcards, Snakemake can run multiple independent jobs in parallel using the `--cores` flag."
+  "**Wildcards** let one rule match many input and output files.",
+  "**Scatter-gather** means running many independent jobs and then combining their outputs.",
+  "**expand()** is a convenient way to define a collection of target files.",
+  "**script:** is useful when a workflow step is more naturally written as a small Python script than as a shell one-liner."
 ]
 +++
 
-## Scaling Up: From One File to Many
+In particle physics, we rarely process just one file. A dataset is usually
+split across many files, we run the same selection on each file, and then we
+gather the results into a final summary or plot. This pattern is often called
+**scatter-gather**.
 
-In CMS, we never have just one "raw_data.txt". We have `DYJets`, `TTbar`, `WJets`, and various `Data` eras. Writing a rule for each one would be a nightmare.
+In this episode, we use Snakemake wildcards to build that pattern in a simple
+form. We will assume that we already know which datasets and file chunks exist.
+In the next episode, we will look at what to do when that information is only
+discovered at run time.
 
-Snakemake handles this using **Wildcards**.
+## Preparing the Input Files
 
----
+Create a few toy inputs:
 
-## The Wildcard Syntax
+```bash
+mkdir -p input/DYJets input/TTbar input/Data
 
-A wildcard is a placeholder in curly braces `{}`. For example, instead of writing a rule that only processes `TTbar.txt`, we can write a generic rule that works for any sample:
-
-```python
-rule skim_data:
-    input:
-        "raw/{sample}.txt"
-    output:
-        "skimmed/{sample}.txt"
-    shell:
-        "grep 'Signal' {input} > {output}"
+for chunk in 0 1 2; do
+    printf "Selected\nCutAway\nSelected\n" > "input/DYJets/DYJets.$chunk.txt"
+    printf "Selected\nSelected\nCutAway\n" > "input/TTbar/TTbar.$chunk.txt"
+    printf "CutAway\nSelected\nCutAway\n" > "input/Data/Data.$chunk.txt"
+done
 ```
 
-### How does it work?
+Each file stands in for one chunk of a larger dataset. Our workflow will:
 
-When you ask for `skimmed/TTbar.txt`, Snakemake looks at the rule and sees it can create `skimmed/{sample}.txt`. It "pattern matches" and determines that `{sample}` must be `TTbar`. It then looks for the input `TTbar.txt`.
+1. run an event selection on every file
+1. write one selected output per file
+1. gather all selected files into one final summary
 
-**Crucial Rule**: Snakemake works **backwards**. It looks at the output you requested, matches it to the output pattern of a rule, determines the wildcard value, and then fills in that value for the input.
+In real analyses, a dataset is often split across many files so that the work
+can be processed in parallel. Here we use three small chunks per dataset, with
+the identifiers `0`, `1`, and `2`. That is why the toy input files are named
+like `DYJets.0.txt` and `TTbar.2.txt`.
 
----
+## The Scatter Step
 
-## The `expand()` function
-
-If you have 100 samples, you don't want to type them all in your `rule all`. Snakemake provides a helper function called `expand()` to generate lists of files.
+We begin by defining the datasets and file chunks we expect:
 
 ```python
-SAMPLES = ["DYJets", "TTbar", "WJets"]
+DATASETS = ["DYJets", "TTbar", "Data"]
+CHUNKS = ["0", "1", "2"]
+```
+
+We write the chunk identifiers as strings because Snakemake wildcards are
+matched from file names. In a path such as `input/DYJets/DYJets.0.txt`, the
+value of `{chunk}` is the text `"0"` taken from the file name.
+
+Now we can write one generic rule for the selection step:
+
+```python
+rule select_events:
+    input:
+        "input/{dataset}/{dataset}.{chunk}.txt"
+    output:
+        "selected/{dataset}/{dataset}.{chunk}.txt"
+    shell:
+        """
+        mkdir -p "selected/{wildcards.dataset}"
+        grep "Selected" "{input}" > "{output}" || test $? -eq 1
+        """
+```
+
+{{< callout type="note" title="Why use `|| test $? -eq 1`?" >}}
+The `grep` command returns exit code `0` when it finds at least one match, and
+exit code `1` when it finds no matches. In this workflow, a file with no
+selected events is not an error: it should simply produce an empty output file.
+
+The extra `|| test $? -eq 1` tells the shell to treat that specific case as
+successful. If `grep` fails for a real reason, such as a missing input file, it
+will return a different exit code and the rule will still fail as it should.
+{{< /callout >}}
+
+This rule does not mention `DYJets`, `TTbar`, or `Data` explicitly. Instead, it
+uses the wildcards `{dataset}` and `{chunk}`. Snakemake fills those values in by
+matching the file names you ask it to create.
+
+If Snakemake needs `selected/TTbar/TTbar.2.txt`, it infers:
+
+- `dataset = TTbar`
+- `chunk = 2`
+
+and then runs the rule with the corresponding input file
+`input/TTbar/TTbar.2.txt`.
+
+## The Gather Step
+
+After the selection, we want one final summary across all selected files. We
+can define that with `rule all` and `expand()`:
+
+```python
+DATASETS = ["DYJets", "TTbar", "Data"]
+CHUNKS = ["0", "1", "2"]
 
 rule all:
     input:
-        expand("skimmed/{s}.txt", s=SAMPLES)
+        "plots/event_counts.txt"
+
+
+rule select_events:
+    input:
+        "input/{dataset}/{dataset}.{chunk}.txt"
+    output:
+        "selected/{dataset}/{dataset}.{chunk}.txt"
+    shell:
+        """
+        mkdir -p "selected/{wildcards.dataset}"
+        grep "Selected" "{input}" > "{output}" || test $? -eq 1
+        """
+
+
+rule make_plot:
+    input:
+        expand(
+            "selected/{dataset}/{dataset}.{chunk}.txt",
+            dataset=DATASETS,
+            chunk=CHUNKS,
+        )
+    output:
+        "plots/event_counts.txt"
+    script:
+        "plot.py"
 ```
 
-The `expand()` function takes a pattern and replaces the placeholders with the values in your list. The code above produces: `["skimmed/DYJets.txt", "skimmed/TTbar.txt", "skimmed/WJets.txt"]`
+The call to `expand()` generates the full list of selected files that we expect
+to gather:
 
-{{< callout type="note" title="Wildcards vs. Expand Variables" >}}
+- `selected/DYJets/DYJets.0.txt`
+- `selected/DYJets/DYJets.1.txt`
+- `selected/DYJets/DYJets.2.txt`
+- `selected/TTbar/TTbar.0.txt`
+- and so on
 
-Notice a subtle difference:
+This is the gather part of the workflow: one rule depends on many upstream
+files and combines them into one output.
 
-1. In `rule skim_data`, we used `{sample}`.
-This is a **Wildcard** (Snakemake figures it out based on the filename).
-2. In `rule all`, we used `{s}` inside `expand()`.
-This is a Python string formatting variable.
+## Using `script:` for the Gather Logic
 
-They do not need to match! `expand()` happens before the rules run to generate the list of target files. The rules run after to figure out how to create those files.
+The final step is easier to read as a short Python script than as a long shell
+command. Create a file called `plot.py`:
 
-{{</ callout >}}
+```python
+from collections import OrderedDict
+from pathlib import Path
 
----
 
-## Activity: Processing Multiple Datasets
+counts = OrderedDict()
 
-{{< instructor >}}
+for input_file in map(Path, snakemake.input):
+    dataset = input_file.parent.name
+    counts.setdefault(dataset, 0)
 
-* **Parallelism:** This is the best moment to explain why the `--cores` flag matters. In HEP, we are used to sending 100 jobs to Condor. Here, we show they can run 4 (or 8, or 16) jobs in parallel locally on their laptop with zero extra effort.
-* **The "Pattern Matching" Warning:** Students often try to put wildcards in the `input` that aren't in the `output`. I would emphasize that Snakemake works **backwards**: it sees a file it wants (the output) and then tries to figure out what the input should be.
+    with open(input_file, "r", encoding="utf-8") as handle:
+        counts[dataset] += sum(
+            1 for line in handle if line.strip() == "Selected"
+        )
 
-{{</ instructor >}}
+output_path = Path(snakemake.output[0])
+output_path.parent.mkdir(parents=True, exist_ok=True)
 
-Let's modify our `Snakefile` to handle three different simulated datasets.
+with open(output_path, "w", encoding="utf-8") as handle:
+    for dataset, count in counts.items():
+        handle.write(f"{dataset}\t{count}\n")
+```
 
-1. Open your `Snakefile` and modify it as follows:
+This script reads every selected file, counts the remaining events for each
+dataset, and writes a small text summary.
 
-  ```python
-  # 1. Define our datasets
-  DATASETS = ["DYJets", "TTbar", "Data"]
+{{< callout type="note" title="Why use script?" >}}
+For short transformations, `shell:` is often enough. For slightly richer logic,
+`script:` keeps the workflow readable and lets you write ordinary Python.
+{{< /callout >}}
 
-  rule all:
-      input:
-          expand("results/{d}_counts.txt", d=DATASETS)
+## Running the Workflow
 
-  # 2. Updated Skim rule with wildcards
-  rule skim_data:
-      input:
-          "raw/{dataset}.txt"
-      output:
-          "skimmed/{dataset}.txt"
-      shell:
-          "grep 'Signal' {input} > {output} || true"
+Start with a dry-run:
 
-  # 3. Updated Count rule with wildcards
-  rule count_events:
-      input:
-          "skimmed/{dataset}.txt"
-      output:
-          "results/{dataset}_counts.txt"
-      shell:
-          "wc -l {input} > {output}"
-  ```
+```bash
+pixi run snakemake -n -p
+```
 
-2. Prepare the "raw" directory and files:
+Then run the workflow with a few cores:
 
-  ```bash
-  mkdir -p raw
-  echo -e "Signal\nBackground" > raw/DYJets.txt
-  echo -e "Signal\nSignal\nBackground" > raw/TTbar.txt
-  echo -e "Background\nBackground" > raw/Data.txt
-  ```
+```bash
+pixi run snakemake --cores 4
+```
 
-3. Run the workflow. Note that we use --cores 4 to allow Snakemake to run independent jobs in parallel:
+Snakemake can run the independent `select_events` jobs in parallel and then run
+`make_plot` once all selected files are ready.
 
-  ```bash
-  pixi run snakemake --cores 4
-  ```
+This is the key scaling idea:
 
-{{< challenge title="Adding a new sample" >}}
+- **scatter** across many independent files
+- **gather** the results into a final output
 
-Add a new dataset called `WJets` to your `DATASETS` list.
+## Adding Another Dataset
 
-1. Create the dummy file `raw/WJets.txt` with some "Signal" lines.
-2. Run Snakemake again.
+{{< challenge title="Add WJets" >}}
+
+Add a new dataset called `WJets`.
+
+1. Add `"WJets"` to the `DATASETS` list.
+1. Create three input files:
+
+   ```bash
+   mkdir -p input/WJets
+
+   for chunk in 0 1 2; do
+       printf "Selected\nCutAway\nCutAway\n" > "input/WJets/WJets.$chunk.txt"
+   done
+   ```
+
+1. Run a dry-run and then the workflow again.
+
+Which jobs should Snakemake add to the workflow?
 
 {{< solution >}}
+Snakemake should add three new `select_events` jobs for the `WJets` files and
+then rerun `make_plot`, because the final summary now depends on additional
+inputs.
 
-Observe how Snakemake only runs the rules for the new `WJets` sample and skips the ones that were already finished (`DYJets`, `TTbar`, `Data`).
-
+The existing `DYJets`, `TTbar`, and `Data` selection outputs do not need to be
+rerun.
 {{< /solution >}}
 {{< /challenge >}}
+
+## Looking Ahead
+
+This episode assumed that we knew the datasets and chunk identifiers in
+advance. That is often good enough, and it keeps the workflow simple.
+
+Sometimes, however, the exact set of files is only known after an earlier step
+has run. That is where Snakemake `checkpoint`s become useful, and that is the
+topic of the next episode.

@@ -1,179 +1,207 @@
 +++
-title = "Getting started"
+title = "Getting Started: Rules, Targets, and the DAG"
 weight = 10
-teaching = 10
+teaching = 15
 exercises = 10
 questions = [
-  "How do I run my first workflow?",
-  "How do I define a single processing step?",
-  "How do I execute a rule?"
+  "How do I run my first Snakemake workflow?",
+  "How does Snakemake connect rules together?",
+  "How does Snakemake decide what needs to run again?"
 ]
 objectives = [
-  "Be able to create a `Snakefile`.",
-  "Understand the contents of a basic Snakemake `rule` with `input`, `output`, and `shell`.",
-  "Be able to execute a specific workflow file."
+  "Create a minimal `Snakefile` with `input`, `output`, and `shell`.",
+  "Run Snakemake by asking for an output file.",
+  "Use `rule all` to define the default workflow target.",
+  "Understand dry-runs and lazy re-execution."
 ]
 keypoints = [
-  "A `Snakefile` defines the workflow.",
-  "A `rule` contains `input`, `output`, and a `shell` command",
-  "You execute the workflow by asking for the **output file**, not the rule name."
+  "A workflow is defined in a `Snakefile`.",
+  "Snakemake works backwards from the output you request.",
+  "Rules are connected by matching outputs to inputs.",
+  "`rule all` defines the default target for the workflow.",
+  "Snakemake only reruns outputs that are missing or stale."
 ]
 +++
 
-From the [Snakemake homepage](https://snakemake.readthedocs.io/en/stable/index.html):
-
-> The Snakemake workflow management system is a tool to create
-> reproducible and scalable data analyses.
-> Workflows are described via a human readable, Python based language.
-> They can be seamlessly scaled to server, cluster, grid and cloud environments,
-> without the need to modify the workflow definition.
-> Snakemake workflows can entail a description of required software,
-> which will be automatically deployed to any execution environment.
-> Finally, workflow runs can be automatically turned into interactive
-> portable browser based reports,
-> which can be shared with collaborators via email or the cloud
-> and combine results with all used parameters, code, and software.
-
-## The Essentials
+In this episode, we build a small event-selection workflow and use it to
+introduce the main Snakemake idea: you ask for the output you want, and
+Snakemake works out the steps needed to create it.
 
 {{< callout type="note" title="Acknowledgements" >}}
-The following material leans heavily on a
-[tutorial by Alejandro Gomez](https://alefisico.github.io/snakemake-cms-tutorial/01-intro.html).
+This lesson started from a tutorial by
+[Alejandro Gomez](https://alefisico.github.io/snakemake-cms-tutorial/01-intro.html)
+and has since been adapted for this course.
 {{< /callout >}}
 
-To run a workflow, you need two things:
+## A First Rule
 
-1. **The Snakefile**: A file named `Snakefile` (capital S, no extension) where you define your rules.
-  It uses a Python-based syntax, so you can write standard Python code inside it alongside your rules.
-2. **The Execution Command**: You run the workflow from the terminal by invoking `snakemake`.
-
-The basic command structure is:
+Create a small input file:
 
 ```bash
-snakemake --cores <N> <target_file>
+cat <<'EOF' > events.txt
+Background
+Signal
+Background
+Signal
+EOF
 ```
 
-- `--cores <N>`: Tells Snakemake how many CPU cores to use.
-  (e.g. `--cores 1` for sequential execution, `--cores 4` for parallel).
-- `<target_file>`: The file you want to generate. Snakemake will figure out the steps to get there.
-- If you dont specify a `<target_file>`,
-  Snakemake will look for a file named `Snakefile` in the current directory.
-  You can specify a different file with `-s <filename>`.
-
----
-
-## The Anatomy of a Rule
-
-The building block of Snakemake is the `rule`.
-Think of it as a recipe.
-To make a dish (output), you need ingredients (inputs),
-a kitchen (the environment),
-and a set of instructions (the shell command).
+Now create a `Snakefile` with one rule:
 
 ```python
-rule skim_data:
+rule select_events:
     input:
-        "raw_data.txt"
+        "events.txt"
     output:
-        "skimmed_data.txt"
+        "selected_events.txt"
     shell:
         "grep 'Signal' {input} > {output}"
 ```
 
-Important Properties:
+This rule says:
 
-- **Rule Name**: Must be unique (here: `skim_data`).
-- **Input/Output**: These are strings (or lists of strings).
-Snakemake uses these to "connect the dots" between rules.
-- **Shell**: The bash command to execute.
-  Note the `{input}` and `{output}` placeholders—Snakemake automatically fills these in with the paths you defined above.
+- the input is `events.txt`
+- the output is `selected_events.txt`
+- the command that transforms one into the other is a shell command
 
-### Understanding the Syntax
+## Running by Target
 
-A `Snakefile` is essentially a Python script with some extra keywords added.
-This is powerful because it means you can use Python variables, functions,
-and libraries directly in your workflow definition.
+Run Snakemake by asking for the output file you want:
 
-- **Indentation matters**: Just like in Python, Snakemake uses indentation (usually 4 spaces) to group code blocks. The `input`, `output`, and `shell` directives must be indented relative to the `rule`.
-- **Strings**: File paths and commands are strings, so they must be enclosed in quotes (`"..."` or `'...'`).
-- **Comments**: Use `#` for comments, just like in Python/Bash.
-- **Lists**: If a rule has multiple inputs or outputs, you can list them with commas:
+```bash
+pixi run snakemake --cores 1 selected_events.txt
+```
+
+Snakemake looks at the requested target, finds a rule that can create it, and
+then runs that rule because `selected_events.txt` does not exist yet.
+
+{{< callout type="note" title="Rule Names and Targets" >}}
+The rule is called `select_events`, but we do not run it by name. We ask for
+the file we want, here `selected_events.txt`.
+{{< /callout >}}
+
+## Thinking Backwards
+
+Now extend the workflow with a second rule:
 
 ```python
+rule select_events:
     input:
-        "file1.txt",
-        "file2.txt"
+        "events.txt"
+    output:
+        "selected_events.txt"
+    shell:
+        "grep 'Signal' {input} > {output}"
+
+
+rule count_events:
+    input:
+        "selected_events.txt"
+    output:
+        "event_counts.txt"
+    shell:
+        "wc -l {input} > {output}"
 ```
 
-## Running the Rule
-
-1. Create dummy data:
-
-  ```bash
-  echo -e "Background\nSignal\nBackground\nSignal" > raw_data.txt
-  ```
-1. Create a `Snakefile` with the content shown above.
-
-1. Run Snakemake. We must tell it **what file we want to generate**:
+If you now run
 
 ```bash
-pixi run snakemake --cores 1 skimmed_data.txt
-# if you run snakemake from a conda environment or pip, use:
-# snakemake --cores 1 skimmed_data.txt
+pixi run snakemake --cores 1 event_counts.txt
 ```
 
-If successful, you will see `Finished jobid: 0`.
+Snakemake reasons backwards:
 
-{{< solution title="Command output" >}}
+1. You want `event_counts.txt`.
+1. `count_events` can create it, but it needs `selected_events.txt`.
+1. `select_events` can create `selected_events.txt` from `events.txt`.
 
-```text
-Assuming unrestricted shared filesystem usage.
-host: gluon
-Building DAG of jobs...
-Using shell: /usr/bin/bash
-Provided cores: 1 (use --cores to define parallelism)
-Rules claiming more threads will be scaled down.
-Job stats:
-job          count
----------  -------
-skim_data        1
-total            1
+This chain of dependencies is the **Directed Acyclic Graph**, or **DAG**. In a
+larger analysis, the same idea scales from two short rules to hundreds of jobs.
 
-Select jobs to execute...
-Execute 1 jobs...
+## Defining a Default Target
 
-[Sun Feb  8 12:05:08 2026]
-localrule skim_data:
-    input: raw_data.txt
-    output: skimmed_data.txt
-    jobid: 0
-    reason: Missing output files: skimmed_data.txt
-    resources: tmpdir=/tmp
-[Sun Feb  8 12:05:08 2026]
-Finished jobid: 0 (Rule: skim_data)
-1 of 1 steps (100%) done
+If you do not specify a target on the command line, Snakemake uses the first
+rule in the `Snakefile`. By convention, we make that first rule a rule called
+`all`, which collects the final outputs we care about.
+
+Update your `Snakefile` to:
+
+```python
+rule all:
+    input:
+        "event_counts.txt"
+
+
+rule select_events:
+    input:
+        "events.txt"
+    output:
+        "selected_events.txt"
+    shell:
+        "grep 'Signal' {input} > {output}"
+
+
+rule count_events:
+    input:
+        "selected_events.txt"
+    output:
+        "event_counts.txt"
+    shell:
+        "wc -l {input} > {output}"
 ```
 
-{{</ solution >}}
-
-{{< instructor >}}
-If `snakemake` was not installed using pixi but with a conda environment or pip, you should remove the `pixi run` part and just run:
+Now you can simply run:
 
 ```bash
-snakemake --cores 1 counts.txt
+pixi run snakemake --cores 1
 ```
 
-This will be the case for most users following this tutorial outside of the pixi environment.
-{{</ instructor >}}
+## Dry-Runs and Lazy Re-Execution
 
-{{< challenge title="Syntax Error Hunt" >}}
+Before running a workflow, it is often useful to ask Snakemake what it would
+do without actually executing anything:
 
-Intentionally break your indentation (remove a space before `input:`).
-Run the command again.
+```bash
+pixi run snakemake -n -p
+```
 
-What error does Snakemake give you?
+The `-n` flag performs a dry-run, and `-p` prints the shell commands.
+
+If you run the workflow again immediately afterwards, Snakemake should report
+that nothing needs to be done, because all requested outputs are present and up
+to date.
+
+This is one of the most useful features of Snakemake: it does not rerun
+everything blindly. It only reruns work when an output is missing or when one
+of its inputs has changed.
+
+{{< challenge title="What Will Re-Run?" >}}
+
+1. Update the timestamp of the original input:
+
+   ```bash
+   touch events.txt
+   ```
+
+2. Run a dry-run:
+
+   ```bash
+   pixi run snakemake -n -p
+   ```
+
+Which rules does Snakemake want to rerun, and why?
 
 {{< solution >}}
-An `IndentationError` is the most common error you will encounter.
+Snakemake should want to rerun both `select_events` and `count_events`.
+
+Once `events.txt` becomes newer than `selected_events.txt`, the selected file is
+considered stale. Since `event_counts.txt` depends on `selected_events.txt`, it
+also becomes stale and must be recreated.
 {{< /solution >}}
 {{< /challenge >}}
+
+{{< instructor >}}
+If learners are not using the Pixi environment, they can remove `pixi run` and
+run `snakemake` directly. To keep the lesson readable, the main text uses the
+Pixi-based commands only.
+{{< /instructor >}}

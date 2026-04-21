@@ -2,162 +2,248 @@
 title = "Containers"
 weight = 30
 teaching = 15
-exercises = 15
+exercises = 10
 questions = [
-  "How do I run specific steps of my analysis in a controlled environment?",
-  "How can I use CMSSW or specific Python versions without installing them locally?",
-  "How does Snakemake handle Apptainer/Singularity?"
-
+  "How can I run a workflow step in a controlled software environment?",
+  "What changes when I add a `container:` directive to a rule?",
+  "What do I need in order to run containerised rules?"
 ]
 objectives = [
-  "Use the `container:` directive to link a rule to a Docker/Apptainer image.",
-  "Execute a workflow where different rules use different environments.",
-  "Understand the `--use-apptainer` (or `--use-singularity`) flag."
+  "Use the `container:` directive in a rule.",
+  "Run Snakemake with Apptainer using the current command-line syntax.",
+  "Understand why different rules can use different software environments.",
+  "Recognise which container details depend on the local site configuration."
 ]
 keypoints = [
-  "**container:**: A rule-level directive that specifies the Docker/Apptainer image to use.",
-  "**--use-apptainer**: The command-line flag required to enable container execution.",
-  "**--apptainer-args**: Use this to bind external storage paths (like `/eos` or `/cvmfs`) so the container can see them.",
-  "**Environment Agnostic**: You can mix and match different containers in a single workflow, ensuring each step has the exact dependencies it needs."
+  "**container:** lets a rule declare the software environment it needs.",
+  "**`--software-deployment-method apptainer`** tells Snakemake to execute containerised rules with Apptainer.",
+  "**Per-rule containers** keep workflow logic and software requirements explicit.",
+  "**Some details depend on where you run the workflow**, for example whether Apptainer is already installed or whether extra bind mounts are needed."
 ]
 +++
 
-## Containers: Your Analysis in a Box
+In particle physics, we often need software that is awkward to install or keep
+consistent across different machines. One step may need a modern Python stack,
+another may need CMSSW, and a third may depend on a specific ROOT build.
 
-In CMS, we often need very specific environments: a certain version of CMSSW, a specific ROOT version for `combine`, or a set of Python libraries like `coffea`. Instead of spending hours fighting with `export PATH` or `cmsenv`, we can use **Containers**.
+Snakemake lets a rule describe not only its inputs and outputs, but also the
+software environment it should run in. That makes workflows more portable and
+more reproducible, because the rule can carry its environment with it.
 
-Snakemake makes this seamless. You can tell a specific rule to run inside a container, and Snakemake will automatically pull the image and wrap your command inside it.
+## Why Containers Matter
 
----
+Without containers, your workflow depends on whatever happens to be installed on
+the machine where it runs. With containers, the workflow can say exactly which
+environment a given step should use.
 
-{{< instructor >}}
+This is especially useful in HEP because:
 
-### My Opinions on this Episode
+- the same workflow may run on a laptop, on a shared system, or on batch nodes
+- different rules may genuinely need different software stacks
+- the analysis logic should stay the same even when the execution environment
+  changes
 
-* **The "LPC/LXPLUS" connection:** This is where you should mention that on most HEP clusters, `singularity` or `apptainer` is already installed. This makes their local tutorial 100% transferable to the big machines.
-* **Binding directories:** Students often ask how the container sees their files. It's worth a small note that Snakemake automatically "binds" the project directory so the container sees the code and data.
+## A First Containerised Rule
 
-{{</ instructor >}}
-
-## The `container:` Directive
-
-To use a container, you simply add the `container:` keyword to your rule.
-
-```python
-rule plot_data:
-    input:
-        "results/{dataset}_counts.txt"
-    output:
-        "plots/{dataset}.png"
-    container:
-        "docker://python:3.10-slim"
-    shell:
-        "python scripts/my_plotter.py {input} {output}"
-```
-
-### What happens behind the scenes?
-
-When you run Snakemake with the `--use-apptainer` flag:
-
-1. Snakemake sees the `container:` directive.
-2. It pulls the image (if not already present) using Apptainer/Singularity. *Note*: Apptainer can run `docker://` images perfectly fine.
-3. It starts the container and **automatically mounts (binds)** your current working directory inside it.
-4. It executes the `shell` command inside that container.
-
-### Why is this better than a local environment?
-
-- **Portability**: You can run the exact same container on your laptop, the LPC, or the Grid.
-- **Isolation**: Rule A can use `python:2.7` while Rule B uses `python:3.11`. *No more version conflicts!*
-- **No Installation**: You don't need to install `ROOT` or `CMSSW` on your machine; you just need to point to the image.
-
-{{< callout type="note" title="Apptainer Installation" >}}
-
-While we are using **Pixi** to manage Snakemake and our local Python tools, Pixi does not typically install Apptainer/Singularity itself. This is because Apptainer requires specific system-level permissions to manage containers safely.
-
-* **On your laptop:** You must have Apptainer installed at the system level (e.g., via `brew` on macOS with a virtual machine, or your Linux distribution's package manager).
-* **On CMS Clusters (LPC/LxPlus):** Apptainer is already pre-installed by the administrators.
-
-Before proceeding, verify you have it by running: `apptainer --version`.
-
-{{</ callout >}}
-
----
-
-## Activity: Running a "Physics" Script in a Container
-
-Let's simulate a plotting step that requires a specific Python environment.
-
-1. Create a simple plotting script named `plotter.py`:
-
-```python
-import sys
-# Simulate a plotting library requirement
-print(f"Generating plot from {sys.argv[1]} using Python {sys.version}")
-with open(sys.argv[2], "w") as f:
-    f.write("IMAGE_DATA")
-```
-
-2. Modify your `Snakefile` to include a containerized plotting rule:
+We can reuse the `plot.py` script from the previous episode and run the gather
+step inside a Python container.
 
 ```python
 DATASETS = ["DYJets", "TTbar", "Data"]
+CHUNKS = ["0", "1", "2"]
+
 
 rule all:
     input:
-        expand("plots/{d}.png", d=DATASETS)
+        "plots/event_counts.txt"
 
-# (Keep your previous skim_data and count_events rules here)
 
-rule plot_results:
+rule select_events:
     input:
-        "results/{dataset}_counts.txt"
+        "input/{dataset}/{dataset}.{chunk}.txt"
     output:
-        "plots/{dataset}.png"
-    container:
-        "docker://python:3.10-slim"
+        "selected/{dataset}/{dataset}.{chunk}.txt"
     shell:
-        "python plotter.py {input} {output}"
+        """
+        mkdir -p "selected/{wildcards.dataset}"
+        grep "Selected" "{input}" > "{output}" || test $? -eq 1
+        """
+
+
+rule make_plot:
+    input:
+        expand(
+            "selected/{dataset}/{dataset}.{chunk}.txt",
+            dataset=DATASETS,
+            chunk=CHUNKS,
+        )
+    output:
+        "plots/event_counts.txt"
+    container:
+        "docker://python:3.11-slim"
+    script:
+        "plot.py"
 ```
 
-3. Run the workflow using Apptainer:
+The workflow logic is unchanged: `make_plot` still gathers the selected files
+and writes the summary. The new part is the `container:` directive, which tells
+Snakemake which image to use for that rule.
+
+## Running the Workflow with Apptainer
+
+Before running the workflow, set the Apptainer cache directory to a temporary
+location. Otherwise, pulled container images can quickly fill your home
+directory.
+
+On LxPlus and similar systems where `TMPDIR` is already defined, use:
 
 ```bash
-pixi run snakemake --cores 1 --use-apptainer
+export APPTAINER_CACHEDIR="${TMPDIR}/.apptainer-cache"
+mkdir -p "${APPTAINER_CACHEDIR}"
 ```
 
-{{< callout type="note" >}}
-
-Please note that the previous exercise will create empty "plots" since the `plotter.py` is just a placeholder. The point is to see the container in action, not to generate real plots!
-
-{{</ callout >}}
-
-**Did it work?** Depending on where you run it, this answer may vary. If you are running on `lxplus`/`cmslpc`, you might get an error about bindings or permissions. This is the next topic we'll cover.
-
-## Accessing External Data (Bind Mounts)
-
-By default, Snakemake only lets the container see files inside your current project folder.
-
-**The CMS Problem:** In HEP, our data typically lives on storage areas like `/eos` or `/cernbox`, and our software might live on `/cvmfs`. If you try to access a file in `/eos/user/...` from inside the container, it will fail because the container is isolated.
-
-**The Solution:** You can pass arguments to Apptainer using the `--apptainer-args` flag in Snakemake:
+If you are not on such a system, use a user-specific directory under `/tmp`
+instead:
 
 ```bash
-pixi run snakemake --cores 1 --use-apptainer --apptainer-args "--bind /eos:/eos --bind /cvmfs:/cvmfs"  ### --bind /uscms_data/d3/user/ if you are at the LPC
+export APPTAINER_CACHEDIR="/tmp/${USER}/.apptainer-cache"
+mkdir -p "${APPTAINER_CACHEDIR}"
 ```
 
-This tells Apptainer: "Poke a hole in the container so I can see `/eos` and `/cvmfs` from the outside."
+To make Snakemake execute containerised rules, use:
 
-{{< challenge title="Different Containers for Different Tasks" >}}
+```bash
+pixi run snakemake --cores 4 --software-deployment-method apptainer
+```
 
-Imagine your `skim_data` rule requires an old C++ library only available in a `cmssw` image, but your `plot_results` rule needs a modern `coffea` environment.
+The short form is:
 
-1. Can you assign different `container:` directives to different rules in the same `Snakefile`?
+```bash
+pixi run snakemake --cores 4 --sdm apptainer
+```
 
-2. Try changing the container: in `plot_results` to `docker://alpine:latest` and run it. What happens?
+{{< callout type="note" title="Command-line syntax" >}}
+Older tutorials may use `--use-apptainer` or `--use-singularity`. In this
+lesson, we use `--software-deployment-method apptainer` because it matches the
+current Snakemake documentation.
+{{< /callout >}}
+
+{{< callout type="warning" title="What if you omit `--sdm apptainer`?" >}}
+If you run Snakemake without enabling Apptainer, the `container:` directive is
+ignored and the rule runs in your ordinary host environment instead.
+
+That means the workflow may still appear to work if the required software is
+already installed on your machine, but you are no longer actually testing the
+containerised version of the rule.
+{{< /callout >}}
+
+{{< callout type="note" title="Optional: a Pixi task" >}}
+If you created the tutorial workspace with Pixi in the setup step, you can add
+the following snippet to the generated `pixi.toml`:
+
+```toml
+[tasks]
+snakemake-apptainer = { cmd = "snakemake --cores 4 --sdm apptainer", env = { APPTAINER_CACHEDIR = "$TMPDIR/.apptainer-cache" } }
+```
+
+You can then run:
+
+```bash
+pixi run snakemake-apptainer
+```
+
+This is optional, but it can be convenient because it keeps the important
+`--sdm apptainer` option and the cache setting in one place.
+
+On systems where `TMPDIR` is not defined, replace `"$TMPDIR/.apptainer-cache"`
+with `"/tmp/$USER/.apptainer-cache"` instead.
+
+For more on Pixi tasks, see the
+[Pixi advanced tasks documentation](https://pixi.prefix.dev/latest/workspace/advanced_tasks/)
+and the
+[Pixi environment variable documentation](https://pixi.prefix.dev/latest/reference/environment_variables/).
+{{< /callout >}}
+
+## What Happens Behind the Scenes?
+
+When Snakemake sees a rule with a `container:` directive and you run with
+Apptainer enabled, it will:
+
+1. resolve the requested image
+1. pull it if needed and cache it locally
+1. execute the job inside that container
+1. make the workflow files available to the job
+
+From the rule author's point of view, this is the important part: the rule
+still declares `input`, `output`, and how to run the step. The container just
+defines the software environment for that step.
+
+## Why Per-Rule Containers Are Useful
+
+Different parts of a workflow may need different environments. Snakemake allows
+that naturally:
+
+```python
+rule old_software_step:
+    output:
+        "intermediate.root"
+    container:
+        "docker://my-old-root-image:latest"
+    shell:
+        "run_old_code > {output}"
+
+
+rule modern_python_step:
+    input:
+        "intermediate.root"
+    output:
+        "plots/final_summary.txt"
+    container:
+        "docker://python:3.11-slim"
+    script:
+        "plot.py"
+```
+
+That is a major advantage over trying to manage the whole workflow inside one
+shared login environment.
+
+{{< callout type="note" title="Global versus per-rule containers" >}}
+Snakemake also allows a global container definition, but per-rule containers
+are often clearer for teaching and for real workflows because they keep the
+software requirements close to the rule that needs them.
+{{< /callout >}}
+
+## Practical Notes
+
+The idea of containers is the same everywhere, but some execution details
+depend on the system where you run the workflow.
+
+- On a local machine, you need Apptainer installed on the system.
+- On shared systems, Apptainer may already be available.
+- External paths may need additional bind mounts.
+- Exact execution details can depend on the local site configuration.
+
+## A Small Reality Check
+
+{{< challenge title="What if the container is wrong?" >}}
+
+Change the container image for `make_plot` from
+`docker://python:3.11-slim` to `docker://alpine:latest` and run the workflow
+again.
+
+What do you expect to happen, and why?
 
 {{< solution >}}
+The rule should fail, because `alpine:latest` does not provide the Python
+environment needed to run `plot.py`.
 
-Yes! Snakemake is designed for this. It will start the correct container for each specific job. If you switch to alpine:latest, the job will fail because alpine does not have python installed by default—this proves the command is truly running inside the isolated container!
+That failure is actually useful: it shows that the job is really running inside
+the declared container, not in your ordinary login environment.
+{{< /solution >}}
+{{< /challenge >}}
 
-{{</ solution >}}
-{{</ challenge >}}
+{{< instructor >}}
+If learners ask about site-specific details such as extra bind mounts or why a
+rule works on one system but not another, acknowledge that these are important
+questions but keep the main focus on the general container idea first.
+{{< /instructor >}}

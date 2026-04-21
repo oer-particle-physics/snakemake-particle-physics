@@ -146,6 +146,11 @@ disableKinds = ["taxonomy", "term", "RSS"]
     pageRef = "/profiles"
     weight = 50
   [[menus.main]]
+    name = "Instructor Notes"
+    parent = "resources"
+    url = "/instructors/instructor-notes/"
+    weight = 55
+  [[menus.main]]
     name = "Search"
     weight = 80
     [menus.main.params]

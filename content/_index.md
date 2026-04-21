@@ -22,27 +22,26 @@ layout = "hextra-home"
 
 
 <div class="hx:mt-6"></div>
-<!--
 {{< hextra/feature-grid cols="3" >}}
 {{< hextra/feature-card
-  title="First-run path"
-  subtitle="Follow the getting-started page in order: setup, metadata, then content replacement."
+  title="Scatter-Gather Workflows"
+  subtitle="Use wildcards and `expand()` to run the same selection across many event files and then gather the results."
   icon="book-open"
-  link="episodes/getting-started/"
+  link="episodes/scaling/"
 >}}
 {{< hextra/feature-card
-  title="Shared docs"
-  subtitle="Use the shared `hugo-styles` docs for authoring, deployment, and update guidance after the site is running."
-  icon="academic-cap"
-  link="https://oer-particle-physics.github.io/hugo-styles/docs/quickstart/"
->}}
-{{< hextra/feature-card
-  title="Setup checks"
-  subtitle="Verify Hugo Extended first. Go stays optional for normal authoring because `_vendor/` is committed."
+  title="Dynamic File Discovery"
+  subtitle="Learn when ordinary wildcards are not enough and how `checkpoint` lets Snakemake expand the workflow at run time."
   icon="sparkles"
-  link="learners/setup/"
+  link="episodes/checkpoints/"
 >}}
-{{< /hextra/feature-grid >}} -->
+{{< hextra/feature-card
+  title="Portable Execution"
+  subtitle="See how the same workflow can use per-rule containers and be submitted to HTCondor with a workflow profile."
+  icon="academic-cap"
+  link="episodes/containers/"
+>}}
+{{< /hextra/feature-grid >}}
 
 <div class="hx:mt-6"></div>
 {{< lesson/overview >}}

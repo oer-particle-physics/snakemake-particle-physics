@@ -1,6 +1,6 @@
 +++
-title = "Visualising the Workflow"
-weight = 25
+title = "Bonus: Visualising the Workflow"
+weight = 70
 teaching = 10
 exercises = 10
 questions = [
