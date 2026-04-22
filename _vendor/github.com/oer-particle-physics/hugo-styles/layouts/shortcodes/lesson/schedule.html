@@ -1,10 +1,11 @@
 {{ $episodes := sort (where site.RegularPages "Section" "episodes") "Weight" "asc" }}
 {{ $setupPage := site.GetPage "/learners/setup" }}
+{{ $inlineRender := dict "display" "inline" }}
 {{ if gt (len $episodes) 0 }}
 {{ $title := .Get "title" | default "Schedule" }}
-<section class="hx:mt-10 hx:w-full">
+<section class="hx:mt-8 hx:w-full">
   <div class="hx:w-full hx:overflow-hidden hx:rounded-3xl hx:border hx:border-gray-200 hx:bg-white hx:px-8 hx:pb-8 hx:pt-10 hx:shadow-sm hx:dark:border-neutral-800 hx:dark:bg-neutral-900">
-    <h2 class="hx:mt-0 hx:mb-6 hx:text-2xl">{{ $title }}</h2>
+    <h2 class="hx:first:mt-0 hx:mb-6 hx:text-2xl">{{ $title }}</h2>
     <div class="hx:overflow-x-auto">
       <table class="hx:min-w-full hx:w-full hx:border-collapse hx:text-sm">
         <thead>
@@ -30,6 +31,14 @@
           {{ range $episode := $episodes }}
             {{ $start := printf "%02d:%02d" (div $minutes 60) (mod $minutes 60) }}
             {{ $episodeMinutes := add ($episode.Params.teaching | default 0) ($episode.Params.exercises | default 0) }}
+            {{ with $episode.Params.questions }}
+              {{ range . }}
+                {{ $item := printf "%v" . }}
+                {{ if or (strings.Contains $item "\\(") (strings.Contains $item "\\[") (strings.Contains $item "$$") }}
+                  {{ $.Page.Store.Set "hasMath" true }}
+                {{ end }}
+              {{ end }}
+            {{ end }}
             <tr class="hx:border-b hx:border-gray-100 hx:align-top hx:dark:border-neutral-800/80">
               <td class="hx:px-3 hx:py-4 hx:whitespace-nowrap hx:font-mono hx:text-sm">{{ $start }}</td>
               <td class="hx:px-3 hx:py-4 hx:font-medium">
@@ -42,8 +51,7 @@
                 {{ with $episode.Params.questions }}
                   <ul class="hx:mb-0">
                     {{ range . }}
-                      {{ $item := replaceRE "`([^`]+)`" "<code>$1</code>" (htmlEscape .) }}
-                      <li>{{ $item | safeHTML }}</li>
+                      <li>{{ $episode.RenderString $inlineRender . }}</li>
                     {{ end }}
                   </ul>
                 {{ else }}
