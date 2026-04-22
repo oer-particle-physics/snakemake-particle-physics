@@ -47,7 +47,10 @@ executor and the profile that Snakemake uses at run time.
 
 {{< callout type="note" title="CERN-specific note" >}}
 In the CERN examples, it is usually better to run workflows from your **AFS** work area
+(if you have one)
 rather than your home directory.
+Mind that submission from an EOS area at CERN is currently an
+[experimental feature](https://batchdocs.web.cern.ch/local/eossubmit.html).
 {{< /callout >}}
 
 ## Install the Executor Plugin

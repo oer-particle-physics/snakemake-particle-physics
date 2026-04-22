@@ -1,5 +1,5 @@
 +++
-title = "Dynamic Scatter-Gather with Checkpoints"
+title = "Dynamic File Discovery with Checkpoints"
 weight = 25
 teaching = 15
 exercises = 10
@@ -10,7 +10,7 @@ questions = [
 ]
 objectives = [
   "Recognise when a workflow needs a `checkpoint`.",
-  "Write a checkpoint that discovers input files and records them in manifest files.",
+  "Write a checkpoint that discovers input files and records them in simple file lists.",
   "Use `checkpoints.<name>.get()` inside an input function.",
   "Interpret the DAG before and after checkpoint expansion."
 ]
@@ -29,9 +29,11 @@ process.
 Sometimes, however, the file list is only known after an earlier step has run.
 For example, you might first scan a directory, query a bookkeeping service such as
 [DAS](https://cmsweb.cern.ch/das/) (in CMS) or Rucio, or more generally,
-produce one manifest file per dataset. In those cases, the downstream jobs
-cannot be fully determined at the start of the workflow. This is where
-Snakemake `checkpoint`s become useful.
+produce one text file per dataset listing the discovered inputs. In those cases,
+the downstream jobs cannot be fully determined at the start of the workflow.
+This is where Snakemake `checkpoint`s become useful. The official Snakemake
+documentation describes this under
+[data-dependent conditional execution](https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html#data-dependent-conditional-execution).
 
 ## When You Need a Checkpoint
 
@@ -49,7 +51,7 @@ is discovered by the workflow itself.
 
 ## A Checkpoint for File Discovery
 
-We begin with a checkpoint that writes one manifest file per dataset:
+We begin with a checkpoint that writes one file list per dataset:
 
 ```python
 DATASETS = ["DYJets", "TTbar", "Data"]
@@ -71,8 +73,8 @@ checkpoint get_dataset_files:
         """
 ```
 
-Each output file under `file_lists/` contains the discovered input files for
-one dataset. In a real analysis, the same pattern could come from a DAS/Rucio
+Each text file under `file_lists/` contains the discovered input files for one
+dataset. In a real analysis, the same pattern could come from a DAS/Rucio
 query, an EOS directory scan, or some metadata service.
 
 At this stage, it is useful to run only the checkpoint outputs and inspect what
@@ -85,13 +87,13 @@ pixi run snakemake --cores 1 \
     file_lists/Data.txt
 ```
 
-Now inspect one of the manifest files to see what the checkpoint produces:
+Now inspect one of the file lists to see what the checkpoint produces:
 
 ```bash
 cat file_lists/DYJets.txt
 ```
 
-## Turning Manifest Files into Downstream Targets
+## Turning File Lists into Downstream Targets
 
 After the checkpoint has run, we can also inspect its outputs programmatically
 and build the list of files that should be created by the selection step:
@@ -101,13 +103,13 @@ from pathlib import Path
 
 
 def selected_files(_wildcards):
-    manifest_files = checkpoints.get_dataset_files.get().output
+    file_lists = checkpoints.get_dataset_files.get().output
     outputs = []
 
-    for manifest in map(Path, manifest_files):
-        dataset = manifest.stem
+    for file_list in map(Path, file_lists):
+        dataset = file_list.stem
 
-        with open(manifest, "r", encoding="utf-8") as handle:
+        with open(file_list, "r", encoding="utf-8") as handle:
             for line in handle:
                 source_path = line.strip()
 
@@ -132,8 +134,8 @@ This tells Snakemake:
 1. wait until its outputs exist
 1. then reevaluate the input function using those outputs
 
-In this lesson, we read the manifest files directly because it makes the reason
-for the checkpoint easy to see. Another common pattern is to use
+In this lesson, we read the file lists directly because it makes the reason for
+the checkpoint easy to see. Another common pattern is to use
 `glob_wildcards()` after the checkpoint has materialised its outputs.
 
 ## The Full Workflow
@@ -148,13 +150,13 @@ DATASETS = ["DYJets", "TTbar", "Data"]
 
 
 def selected_files(_wildcards):
-    manifest_files = checkpoints.get_dataset_files.get().output
+    file_lists = checkpoints.get_dataset_files.get().output
     outputs = []
 
-    for manifest in map(Path, manifest_files):
-        dataset = manifest.stem
+    for file_list in map(Path, file_lists):
+        dataset = file_list.stem
 
-        with open(manifest, "r", encoding="utf-8") as handle:
+        with open(file_list, "r", encoding="utf-8") as handle:
             for line in handle:
                 source_path = line.strip()
 
@@ -224,8 +226,8 @@ jobs will exist. The workflow therefore starts with a much smaller DAG:
 
 ![Pre-checkpoint DAG](dag-pre.png)
 
-After the checkpoint has produced the manifest files, Snakemake reevaluates the
-workflow and expands the full scatter-gather structure:
+After the checkpoint has produced the file lists, Snakemake reevaluates the
+workflow and expands the full workflow structure:
 
 ![Expanded DAG after the checkpoint](dag-post.png)
 

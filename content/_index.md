@@ -24,8 +24,8 @@ layout = "hextra-home"
 <div class="hx:mt-6"></div>
 {{< hextra/feature-grid cols="3" >}}
 {{< hextra/feature-card
-  title="Scatter-Gather Workflows"
-  subtitle="Use wildcards and `expand()` to run the same selection across many event files and then gather the results."
+  title="Parallel Processing Across Files"
+  subtitle="Use wildcards and `expand()` to run the same selection across many event files in parallel and then gather the results."
   icon="book-open"
   link="episodes/scaling/"
 >}}

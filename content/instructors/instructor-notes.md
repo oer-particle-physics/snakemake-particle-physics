@@ -9,8 +9,8 @@ audience = "instructor"
 The lesson has five main episodes and one bonus episode:
 
 1. `Getting Started: Rules, Targets, and the DAG`
-1. `Scaling with Wildcards and Scatter-Gather`
-1. `Dynamic Scatter-Gather with Checkpoints`
+1. `Scaling with Wildcards for Parallel Processing`
+1. `Dynamic File Discovery with Checkpoints`
 1. `Containers`
 1. `Running on HTCondor`
 1. `Bonus: Visualising the Workflow`
@@ -19,7 +19,8 @@ The main story stays close to a realistic analysis pattern:
 
 - start from a simple workflow
 - scale to many files with wildcards
-- introduce scatter-gather
+- introduce parallel processing across many files, and note that this pattern is
+  often called scatter-gather
 - show when dynamic discovery needs `checkpoint`
 - show how software environments and batch execution fit around the same
   workflow logic
@@ -30,8 +31,8 @@ For a 1.5 hour session, do not try to teach every page in full detail. A good
 live path is:
 
 1. `Getting Started: Rules, Targets, and the DAG`
-1. `Scaling with Wildcards and Scatter-Gather`
-1. `Dynamic Scatter-Gather with Checkpoints`
+1. `Scaling with Wildcards for Parallel Processing`
+1. `Dynamic File Discovery with Checkpoints`
 1. a shorter pass through `Containers`
 1. a short wrap-up with `Running on HTCondor`
 
@@ -42,7 +43,7 @@ Treat `Bonus: Visualising the Workflow` as optional or offline material.
 - `0-10 min`: motivation, setup check, and the “ask for outputs, not rule names”
   mindset
 - `10-25 min`: first workflow, `rule all`, dry-runs, and reruns
-- `25-45 min`: wildcards, `expand()`, and the main scatter-gather example
+- `25-45 min`: wildcards, `expand()`, and the main parallel-processing example
 - `45-60 min`: checkpoints as a dynamic extension of the same example family
 - `60-75 min`: containers, `container:`, and `--sdm apptainer`
 - `75-85 min`: HTCondor profiles, executor plugin, and resource requests
@@ -70,7 +71,7 @@ Teaching note:
 - learners often try to run a rule name rather than request an output file
 - the “works backwards from the target” idea is the key conceptual shift
 
-### Scaling with Wildcards and Scatter-Gather
+### Scaling with Wildcards for Parallel Processing
 
 This is the main practical episode.
 
@@ -78,7 +79,7 @@ Main ideas:
 
 - wildcards
 - `expand()`
-- scatter-gather
+- parallel per-file processing, with a gather step at the end
 - `--cores`
 - `script:`
 
@@ -90,7 +91,7 @@ Teaching note:
 - the `CHUNKS = ["0", "1", "2"]` list works best if you explicitly remind
   learners that these are file identifiers coming from filenames
 
-### Dynamic Scatter-Gather with Checkpoints
+### Dynamic File Discovery with Checkpoints
 
 Teach this as a short guided demo rather than a long coding exercise.
 
@@ -104,10 +105,10 @@ Main ideas:
 
 Teaching note:
 
-- the episode has a useful intermediate milestone: first produce all manifest
-  files, then inspect one of them, and only afterwards show the full dynamic
+- the episode has a useful intermediate milestone: first produce all file lists,
+  then inspect one of them, and only afterwards show the full dynamic
   workflow
-- prefer the explicit manifest-reading pattern in class
+- prefer the explicit file-list-reading pattern in class
 - keep `glob_wildcards()` as an instructor-side aside, not as the default
   learner-facing pattern
 
@@ -216,7 +217,7 @@ where learners start asking about CPU, memory, disk, and runtime.
 
 ## Teaching Note: Checkpoints and `glob_wildcards()`
 
-In the checkpoint episode, prefer the explicit manifest-reading pattern as the
+In the checkpoint episode, prefer the explicit file-list-reading pattern as the
 main learner-facing example.
 
 Why this works better for teaching:

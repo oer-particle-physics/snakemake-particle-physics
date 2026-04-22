@@ -1,22 +1,22 @@
 +++
-title = "Scaling with Wildcards and Scatter-Gather"
+title = "Scaling with Wildcards for Parallel Processing"
 weight = 20
 teaching = 15
 exercises = 10
 questions = [
   "How can one rule process many event files?",
-  "What does a scatter-gather workflow look like in Snakemake?",
+  "How can Snakemake run many file-based jobs in parallel and then combine their results?",
   "How do wildcards and `expand()` help a workflow scale?"
 ]
 objectives = [
   "Use wildcards to run the same rule over many files.",
   "Use `expand()` to define a whole collection of expected outputs.",
-  "Build a simple scatter-gather workflow.",
+  "Build a simple workflow that runs over many files in parallel and then gathers the results.",
   "Use `script:` for a small gather step."
 ]
 keypoints = [
   "**Wildcards** let one rule match many input and output files.",
-  "**Scatter-gather** means running many independent jobs and then combining their outputs.",
+  "Snakemake can run many independent jobs in parallel and then combine their outputs in a later step.",
   "**expand()** is a convenient way to define a collection of target files.",
   "**script:** is useful when a workflow step is more naturally written as a small Python script than as a shell one-liner."
 ]
@@ -24,8 +24,9 @@ keypoints = [
 
 In particle physics, we rarely process just one file. A dataset is usually
 split across many files, we run the same selection on each file, and then we
-gather the results into a final summary or plot. This pattern is often called
-**scatter-gather**.
+gather the results into a final summary or plot. Snakemake can run the
+file-by-file work in parallel and then combine the results. This pattern is
+often called **scatter-gather**.
 
 In this episode, we use Snakemake wildcards to build that pattern in a simple
 form. We will assume that we already know which datasets and file chunks exist.
@@ -57,7 +58,7 @@ can be processed in parallel. Here we use three small chunks per dataset, with
 the identifiers `0`, `1`, and `2`. That is why the toy input files are named
 like `DYJets.0.txt` and `TTbar.2.txt`.
 
-## The Scatter Step
+## The Parallel Step
 
 We begin by defining the datasets and file chunks we expect:
 
@@ -214,8 +215,8 @@ Snakemake can run the independent `select_events` jobs in parallel and then run
 
 This is the key scaling idea:
 
-- **scatter** across many independent files
-- **gather** the results into a final output
+- run the same step across many independent files in parallel
+- gather the results into a final output
 
 ## Adding Another Dataset
 
