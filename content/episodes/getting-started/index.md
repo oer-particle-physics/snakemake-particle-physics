@@ -23,6 +23,10 @@ keypoints = [
 ]
 +++
 
+Snakemake is a Python-based workflow management system for building 
+reproducible and scalable data analysis pipelines 
+[Mölder et al., 2021](https://f1000research.com/articles/10-33/v1).
+
 In this episode, we build a small event-selection workflow and use it to
 introduce the main Snakemake idea: you ask for the output you want, and
 Snakemake works out the steps needed to create it.
