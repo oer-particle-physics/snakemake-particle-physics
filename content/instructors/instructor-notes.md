@@ -27,7 +27,7 @@ The main story stays close to a realistic analysis pattern:
 
 ## Recommended 90-Minute Live Path
 
-For a 1.5 hour session, do not try to teach every page in full detail. A good
+For a 1.5-hour session, do not attempt to teach every page in full detail. A good
 live path is:
 
 1. `Getting Started: Rules, Targets, and the DAG`
@@ -155,7 +155,7 @@ Teaching note:
 
 ### Bonus: Visualising the Workflow
 
-Keep this as bonus or offline material.
+Keep this as a bonus or offline material.
 
 Main ideas:
 

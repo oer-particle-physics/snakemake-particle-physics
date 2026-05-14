@@ -18,7 +18,7 @@ keypoints = [
   "**container:** lets a rule declare the software environment it needs.",
   "**`--software-deployment-method apptainer`** tells Snakemake to execute containerised rules with Apptainer.",
   "**Per-rule containers** keep workflow logic and software requirements explicit.",
-  "**Some details depend on where you run the workflow**, for example whether Apptainer is already installed or whether extra bind mounts are needed."
+  "**Some details depend on where you run the workflow**, for example, whether Apptainer is already installed or whether extra bind mounts are needed."
 ]
 +++
 
@@ -228,5 +228,5 @@ the declared container, not in your ordinary login environment.
 {{< instructor >}}
 If learners ask about site-specific details such as extra bind mounts or why a
 rule works on one system but not another, acknowledge that these are important
-questions but keep the main focus on the general container idea first.
+questions, but keep the main focus on the general container idea first.
 {{< /instructor >}}

@@ -173,7 +173,7 @@ On batch systems, the right unit of work is not always “one input file per job
 If the per-file tasks are very small, submitting one HTCondor job for each file
 can create unnecessary overhead.
 
-The example repository therefore includes two batching patterns:
+The example repository therefore, includes two batching patterns:
 
 - fixed-size batching
 - cost-aware batching

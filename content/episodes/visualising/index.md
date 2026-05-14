@@ -144,14 +144,14 @@ pixi run snakemake -n -p
 
 {{< details title="Did the previous command work?" >}}
 
-If you run this commands on top of finished workflow, you should see something like:
+If you run these commands on top of finished workflow, you should see something like:
 
 ```output
 Building DAG of jobs...
 Nothing to be done (all requested files are present and up to date).
 ```
 
-This is expected, because all the output files already exist. If you change something in your Snakefile (like adding a new rule or changing an existing one), the dry-run will show you which jobs need to be re-run.
+This is expected because all the output files already exist. If you change something in your Snakefile (like adding a new rule or changing an existing one), the dry-run will show you which jobs need to be re-run.
 
 Alternatively, if you want to see the dry-run or the commands to execute, use:
 
