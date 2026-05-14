@@ -3,7 +3,7 @@
 This repository generates the corresponding lesson website from [The Carpentries](https://carpentries.org/) repertoire of lessons.
 
 > **Note**
-> Click [here](oer-particle-physics.github.io/snakemake-particle-physics/) for the training website!
+> Click [here](https://oer-particle-physics.github.io/snakemake-particle-physics/) for the training website!
 
 The aim of this module is to provide an introduction to Snakemake for particle physics data analysis.
 
