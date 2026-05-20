@@ -211,6 +211,12 @@ rule make_plot:
         "plot.py"
 ```
 
+In `rule select_events`, the `{sample}` wildcard is inferred from the file name,
+not defined in a separate list. If Snakemake needs
+`selected/DYJets/DYJets.0.txt`, the output pattern maps `{dataset}` to `DYJets`
+and `{sample}` to `DYJets.0`. It then uses the same wildcard values to look for
+`input/DYJets/DYJets.0.txt`.
+
 Notice what has disappeared compared with the previous episode: we no longer
 need a manually written `CHUNKS = [...]` list. The workflow discovers the files
 and uses them to define the downstream jobs.
