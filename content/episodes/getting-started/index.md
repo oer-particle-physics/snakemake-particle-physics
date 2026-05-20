@@ -181,10 +181,10 @@ of its inputs has changed.
 
 {{< challenge title="What Will Re-Run?" >}}
 
-1. Update the timestamp of the original input:
+1. Add one more event to the original input:
 
    ```bash
-   touch events.txt
+   printf "Signal\n" >> events.txt
    ```
 
 2. Run a dry-run:
@@ -198,9 +198,13 @@ Which rules does Snakemake want to rerun, and why?
 {{< solution >}}
 Snakemake should want to rerun both `select_events` and `count_events`.
 
-Once `events.txt` becomes newer than `selected_events.txt`, the selected file is
-considered stale. Since `event_counts.txt` depends on `selected_events.txt`, it
-also becomes stale and must be recreated.
+Once `events.txt` has changed, the selected file is considered stale. Since
+`event_counts.txt` depends on `selected_events.txt`, it also becomes stale and
+must be recreated.
+
+A timestamp-only `touch events.txt` is not a reliable demonstration here:
+modern Snakemake can use recorded checksums for small inputs and may skip the
+rerun if the file contents are unchanged.
 {{< /solution >}}
 {{< /challenge >}}
 
