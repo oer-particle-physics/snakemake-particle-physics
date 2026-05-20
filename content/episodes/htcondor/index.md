@@ -53,6 +53,18 @@ Mind that submission from an EOS area at CERN is currently an
 [experimental feature](https://batchdocs.web.cern.ch/local/eossubmit.html).
 {{< /callout >}}
 
+{{< callout type="note" title="Long-running LxPlus sessions" >}}
+If you run Snakemake from LxPlus, use CERN's lingering `tmux` or `screen`
+service rather than an ordinary SSH shell. The systemd user service keeps the
+session alive after logout and includes an auto-renewing Kerberos ticket.
+Follow the current CERN instructions in
+[KB0008111](https://cern.service-now.com/service-portal?id=kb_article&n=KB0008111).
+
+This matters for batch workflows because the Snakemake process remains the
+workflow controller. If it exits or is interrupted, Snakemake will cancel the
+submitted jobs.
+{{< /callout >}}
+
 ## Install the Executor Plugin
 
 In addition to `snakemake` itself, HTCondor execution needs the corresponding

@@ -38,7 +38,7 @@ powershell -ExecutionPolicy Bypass -c "irm -useb https://pixi.sh/install.ps1 | i
 Check that `pixi` is available:
 
 ```bash
-pixi version
+pixi --version
 ```
 
 {{< callout type="note" title="Later episodes use Apptainer" >}}
