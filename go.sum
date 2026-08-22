@@ -32,3 +32,5 @@ github.com/oer-particle-physics/hugo-styles v0.3.6 h1:0qp5T4WWEazi5ln2sYV2dcmffJ
 github.com/oer-particle-physics/hugo-styles v0.3.6/go.mod h1:xqFkY9oxqm13s30BQewyVS4xD5QUpJi8bbsxlUJHiPc=
 github.com/oer-particle-physics/hugo-styles v0.5.5 h1:DhvwwTzA4ZvlFKGWEN9kjQmgZCeNkOLPYHi07FBQmG0=
 github.com/oer-particle-physics/hugo-styles v0.5.5/go.mod h1:XSlR7LMCzgUaAa4sJp1qIQ6WDwLXwRstam6YXK3XmL0=
+github.com/oer-particle-physics/hugo-styles v0.5.7 h1:nkL5MKxnhmehmOrGBwA/M9QIPMJ7P660fgg9tARBNic=
+github.com/oer-particle-physics/hugo-styles v0.5.7/go.mod h1:XSlR7LMCzgUaAa4sJp1qIQ6WDwLXwRstam6YXK3XmL0=
