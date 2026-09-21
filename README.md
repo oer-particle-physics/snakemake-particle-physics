@@ -32,4 +32,4 @@ This lesson is included in the [ETH Domain Open Educational Resources for Resear
 
 The materials developed here are published under open licenses (CC BY 4.0) and can be freely reused and adapted for teaching and training initiatives worldwide.
 
-See the Zenodo record here (ADD DOI).
+See the Zenodo record [here](https://doi.org/10.5281/zenodo.22882268).

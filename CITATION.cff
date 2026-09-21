@@ -35,5 +35,5 @@ keywords:
   - "Software Dependencies"
 repository-code: https://github.com/oer-particle-physics/snakemake-particle-physics
 url: https://oer-particle-physics.github.io/snakemake-particle-physics/
-doi:
+doi: 10.5281/zenodo.22882268
 license: CC-BY-4.0
