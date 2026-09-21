@@ -2,6 +2,9 @@
 title = "Snakemake for Particle Physics"
 layout = "hextra-home"
 +++
+<div class="hx:w-full hx:mb-8">
+{{< youtube hFnRTYvZLFs >}}
+</div>
 
 <div class="hx:mt-6 hx:mb-6">
 {{< hextra/hero-headline >}}
