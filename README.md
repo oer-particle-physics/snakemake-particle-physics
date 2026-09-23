@@ -1,6 +1,6 @@
 # Snakemake for Particle Physics
 
-This repository generates the corresponding lesson website from [The Carpentries](https://carpentries.org/) repertoire of lessons.
+This repository builds the lesson website with [Hugo Styles](https://oer-particle-physics.github.io/hugo-styles/docs/quickstart/).
 
 > **Note**
 > Click [here](https://oer-particle-physics.github.io/snakemake-particle-physics/) for the training website!
@@ -11,6 +11,10 @@ The aim of this module is to provide an introduction to Snakemake for particle p
 
 We welcome all contributions to improve the lesson! Maintainers will do their best to help you if you have any
 questions, concerns, or experience any difficulties along the way.
+
+For installation and local previews, see the
+[Hugo Styles quickstart](https://oer-particle-physics.github.io/hugo-styles/docs/quickstart/); for editing
+lessons, see the [authoring guide](https://oer-particle-physics.github.io/hugo-styles/docs/authoring/).
 
 ## Maintainer(s)
 
