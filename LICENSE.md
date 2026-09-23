@@ -16,10 +16,6 @@ This includes the prose and teaching material in files such as:
 - `static/` created for the lesson itself
 - other lesson-specific Markdown pages in the repository root
 
-When you create a lesson from this template, replace the placeholder metadata in
-`hugo.toml`, `CITATION.cff`, and `AUTHORS` so the attribution information points
-to your project.
-
 ## Code, scripts, and configuration
 
 Unless noted otherwise, the original code and build/configuration material in
