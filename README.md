@@ -24,7 +24,7 @@ Current maintainers of this lesson are
 
 ## Authors
 
-A list of contributors to the lesson can be found in [AUTHORS](AUTHORS)
+The lesson's authors are listed in [CITATION.cff](CITATION.cff) and on the lesson homepage.
 
 ## Citation
 
